@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "VideoToGifApp",
+            "request": "launch",
+            "mainClass": "App.VideoToGifApp",
+            "projectName": "VideoToGif_673e3799",
+            "vmArgs": "--module-path \"C:\\JavaLibs\\javafx-sdk-23.0.1\\lib\" --add-modules javafx.controls,javafx.fxml"
+        },
+        {
+            "type": "java",
+            "name": "VideoToGifConverter",
+            "request": "launch",
+            "mainClass": "App.VideoToGifConverter",
+            "projectName": "VideoToGif_673e3799"
+        },
+        {
+            "type": "java",
+            "name": "GUI",
+            "request": "launch",
+            "mainClass": "GUI.GUI",
+            "projectName": "VideoToGif_673e3799"
+        }
+    ]
+}

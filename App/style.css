@@ -1,0 +1,15 @@
+.button {
+    -fx-background-color: #008CBA;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10px; /* Убедитесь, что используется только эта строка */
+    -fx-pref-width: 150px; /* Задайте одинаковую ширину для всех кнопок */
+}
+
+.button:hover {
+    -fx-background-color: #005F75;
+}
+
+.label {
+    -fx-font-size: 14px;
+}
