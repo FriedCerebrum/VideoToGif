@@ -62,16 +62,6 @@ public class VideoToGifConverter {
         this.quality = quality;
     }
 
-    
-
-    
-
-    
-
-    
-
-    
-
     private void setupLogging() {
         // Create logs directory if it doesn't exist
         File logDir = new File(LOG_DIR);

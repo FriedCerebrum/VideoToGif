@@ -1,10 +1,10 @@
 package App;
 
-import javafx.scene.Scene;
+import javafx.stage.*;
+import javafx.scene.*;
+import javafx.scene.layout.*;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.geometry.Insets;
 
 public class SettingsWindow extends Stage {
     private TextField startTimeField;
@@ -14,26 +14,36 @@ public class SettingsWindow extends Stage {
     private TextField fpsField;
     private TextField qualityField;
     private boolean settingsChanged = false;
+    private AppConfig config;
 
-    public SettingsWindow(Stage owner) {
+    public SettingsWindow(Stage owner, AppConfig config) {
+        this.config = config;
         initOwner(owner);
         initModality(Modality.APPLICATION_MODAL);
         setTitle("Settings");
 
-        startTimeField = new TextField("0");
-        durationField = new TextField("10");
-        widthField = new TextField("640");
-        heightField = new TextField("480");
-        fpsField = new TextField("10");
-        qualityField = new TextField("10");
+        // Initialize fields with values from config
+        startTimeField = new TextField(String.valueOf(config.getIntProperty("startTime", 0)));
+        durationField = new TextField(String.valueOf(config.getIntProperty("duration", 10)));
+        widthField = new TextField(String.valueOf(config.getIntProperty("width", 640)));
+        heightField = new TextField(String.valueOf(config.getIntProperty("height", 480)));
+        fpsField = new TextField(String.valueOf(config.getIntProperty("fps", 10)));
+        qualityField = new TextField(String.valueOf(config.getIntProperty("quality", 10)));
 
         Button saveButton = new Button("Save");
         saveButton.setOnAction(e -> {
-            settingsChanged = true;
-            close();
+            if (validateInputs()) {
+                settingsChanged = true;
+                close();
+            }
         });
 
+        // Layout setup using GridPane
         GridPane layout = new GridPane();
+        layout.setPadding(new Insets(20));
+        layout.setVgap(10);
+        layout.setHgap(10);
+
         layout.add(new Label("Start Time (s):"), 0, 0);
         layout.add(startTimeField, 1, 0);
         layout.add(new Label("Duration (s):"), 0, 1);
@@ -54,6 +64,55 @@ public class SettingsWindow extends Stage {
         setScene(scene);
     }
 
+    // Validate user inputs before saving
+    private boolean validateInputs() {
+        try {
+            int startTime = Integer.parseInt(startTimeField.getText());
+            int duration = Integer.parseInt(durationField.getText());
+            int width = Integer.parseInt(widthField.getText());
+            int height = Integer.parseInt(heightField.getText());
+            int fps = Integer.parseInt(fpsField.getText());
+            int quality = Integer.parseInt(qualityField.getText());
+
+            // Validation logic
+            if (width <= 0 && width != -1) {
+                showError("Width must be positive or -1 to maintain aspect ratio.");
+                return false;
+            }
+            if (height <= 0 && height != -1) {
+                showError("Height must be positive or -1 to maintain aspect ratio.");
+                return false;
+            }
+            if (fps <= 0) {
+                showError("FPS must be greater than 0.");
+                return false;
+            }
+            if (duration <= 0) {
+                showError("Duration must be greater than 0.");
+                return false;
+            }
+            if (quality < 1 || quality > 31) {
+                showError("Quality must be between 1 and 31.");
+                return false;
+            }
+
+            return true;
+        } catch (NumberFormatException e) {
+            showError("All fields must be valid integers.");
+            return false;
+        }
+    }
+
+    // Show error alert
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Неверный ввод");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // Getters for settings
     public int getStartTime() {
         return Integer.parseInt(startTimeField.getText());
     }
@@ -62,17 +121,9 @@ public class SettingsWindow extends Stage {
         return Integer.parseInt(durationField.getText());
     }
 
-    /* public double getWidth() {
-        return Double.parseDouble(widthField.getText());
-    } */
-
     public double getVideoWidth() {
         return Double.parseDouble(widthField.getText());
     }
-
-    /* public double getHeight() {
-        return Double.parseDouble(heightField.getText());
-    } */
 
     public double getVideoHeight() {
         return Double.parseDouble(heightField.getText());
@@ -90,4 +141,3 @@ public class SettingsWindow extends Stage {
         return settingsChanged;
     }
 }
-

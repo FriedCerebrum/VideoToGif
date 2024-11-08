@@ -6,8 +6,10 @@ import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -20,8 +22,9 @@ import javafx.stage.DirectoryChooser;
 import javafx.scene.layout.HBox;
 
 public class VideoToGifApp extends Application {
+    private AppConfig config;
     private String inputFilePath;
-    private String outputFilePath = "output.gif"; // Путь по умолчанию для GIF
+    private String outputFilePath; // Путь по умолчанию для GIF
     private VideoToGifConverter converter;
 
     // Label для отображения имени файла
@@ -30,6 +33,10 @@ public class VideoToGifApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        config = new AppConfig();
+
+        loadSettings();
+
         primaryStage.setTitle("Video to GIF Converter");
 
         // Устанавливаем фиксированный размер окна
@@ -45,8 +52,8 @@ public class VideoToGifApp extends Application {
 
         // Привязываем события к кнопкам
         settingsButton.setOnAction(e -> openSettingsWindow(primaryStage));
-        chooseFolderButton.setOnAction(e -> chooseOutputFolder());
-        chooseVideoButton.setOnAction(e -> chooseVideoFile());
+        chooseFolderButton.setOnAction(e -> chooseOutputFolder(primaryStage));
+        chooseVideoButton.setOnAction(e -> chooseVideoFile(primaryStage));
         startButton.setOnAction(e -> startConversion());
 
         // Устанавливаем размер кнопок
@@ -93,8 +100,29 @@ public class VideoToGifApp extends Application {
         primaryStage.show();
     }
 
+    private void loadSettings(){
+        int startTime = config.getIntProperty("startTime", 0);
+        int duration = config.getIntProperty("duration", 10);
+        int width = config.getIntProperty("width", 640);
+        int height = config.getIntProperty("height", 480);
+        int fps = config.getIntProperty("fps", 10);
+        int quality = config.getIntProperty("quality", 10);
+        outputFilePath = config.getProperty("outputFolder", "output");
+
+        if (inputFilePath != null){
+            converter = new VideoToGifConverter(inputFilePath);
+            converter.setOutputFilePath(outputFilePath);
+            converter.setStartTime(startTime);
+            converter.setDuration(duration);
+            converter.setWidth(width);
+            converter.setHeight(height);
+            converter.setFps(fps);
+            converter.setQuality(quality);
+        }
+    }
+
     private void openSettingsWindow(Stage owner) {
-        SettingsWindow settingsWindow = new SettingsWindow(owner);
+        SettingsWindow settingsWindow = new SettingsWindow(owner, config);
         settingsWindow.showAndWait();
 
         // После закрытия окна настроек, обновим параметры конвертера
@@ -114,33 +142,54 @@ public class VideoToGifApp extends Application {
         converter.setHeight((int) settings.getVideoHeight());
         converter.setFps(settings.getFps());
         converter.setQuality(settings.getQuality());
+
+        config.setIntProperty("startTime", settings.getStartTime());
+        config.setIntProperty("duration", settings.getDuration());
+        config.setIntProperty("width", (int) settings.getVideoWidth());
+        config.setIntProperty("height", (int) settings.getVideoHeight());
+        config.setIntProperty("fps", settings.getFps());
+        config.setIntProperty("quality", settings.getQuality());
+        config.setProperty("outputFolder", outputFilePath);
+
+        config.save();
     }
 
-    private void chooseOutputFolder() {
+    private void chooseOutputFolder(Stage owner) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Choose Output Folder");
-        File selectedDirectory = directoryChooser.showDialog(null);
-
+        File selectedDirectory = directoryChooser.showDialog(owner);
+    
         if (selectedDirectory != null) {
-            // Сохраняем путь к выбранной папке
-            outputFilePath = Paths.get(selectedDirectory.getAbsolutePath(), "output.gif").toString();
+            // Указываем полный путь с расширением .gif
+            outputFilePath = new File(selectedDirectory, "output.gif").getAbsolutePath();
+            config.setProperty("outputFolder", outputFilePath);
+            config.save();
+            if (converter != null) {
+                converter.setOutputFilePath(outputFilePath);
+            }
         }
     }
+    
 
-    private void chooseVideoFile() {
+    private void chooseVideoFile(Stage owner) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choose Video File");
-        File file = fileChooser.showOpenDialog(null);
-        if (file != null) {
+        fileChooser.setTitle("Choose video");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Video Files", "*.mp4",
+                "*.avi", "*.mov", "*.mkv"));
+        File file = fileChooser.showOpenDialog(owner);
+        if (file != null){
             inputFilePath = file.getAbsolutePath();
-            // Обновляем текст Label с именем выбранного файла
             videoFileNameLabel.setText(file.getName());
-            // Устанавливаем миниатюру видео
             setVideoThumbnail(file);
 
-            // Инициализируем конвертер после выбора файла
             converter = new VideoToGifConverter(inputFilePath);
-            converter.setOutputFilePath(outputFilePath); // Устанавливаем путь вывода по умолчанию
+            converter.setOutputFilePath(outputFilePath);
+            converter.setStartTime(config.getIntProperty("startTime", 0));
+            converter.setDuration(config.getIntProperty("duration", 10));
+            converter.setWidth(config.getIntProperty("width", 640));
+            converter.setHeight(config.getIntProperty("height", 480));
+            converter.setFps(config.getIntProperty("fps", 10));
+            converter.setQuality(config.getIntProperty("quality", 10));
         }
     }
 
@@ -169,23 +218,12 @@ public class VideoToGifApp extends Application {
             @Override
             protected Void call() throws Exception {
                 try {
-                    converter = new VideoToGifConverter(inputFilePath);
-                    converter.setOutputFilePath(outputFilePath);
-
-                    // Устанавливаем параметры с допустимыми значениями по умолчанию
-                    converter.setWidth(480);
-                    converter.setHeight(-1); // -1 для сохранения пропорций
-                    converter.setFps(10);
-                    converter.setDuration(5);
-                    converter.setStartTime(0);
-                    converter.setQuality(10);
-
                     converter.convert();
-                    return null;
+                    updateMessage("Конвертация successful");
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    throw e;
+                    updateMessage("Ошибка конвертации: " + e.getMessage());
                 }
+                return null;
             }
         };
 
@@ -206,20 +244,11 @@ public class VideoToGifApp extends Application {
     }
 
     private void showStatusWindow(String title, String message) {
-        Stage statusStage = new Stage();
-        statusStage.initModality(Modality.APPLICATION_MODAL);
-        statusStage.setTitle(title);
-        Button closeButton = new Button("Close");
-        closeButton.setOnAction(e -> statusStage.close());
-
-        BorderPane layout = new BorderPane();
-        layout.setCenter(closeButton);
-        layout.setTop(new Label(message));
-        BorderPane.setAlignment(closeButton, Pos.CENTER);
-
-        Scene scene = new Scene(layout, 300, 100);
-        statusStage.setScene(scene);
-        statusStage.show();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {

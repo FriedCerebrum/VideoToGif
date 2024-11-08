@@ -38,7 +38,7 @@ Output #0, image2, to 'C:\Users\Ванус\Desktop\РАБоты\Конверте
       encoder         : Lavc61.22.100 png
       handler_name    : ISO Media file produced by Google Inc.
       vendor_id       : [0][0][0][0]
-[image2 @ 0000017804722640] The specified filename 'C:\Users\Ванус\Desktop\РАБоты\Конвертер\VideoToGif\temp\thumbnail.png' does not contain an image sequence pattern or a pattern is invalid.
-[image2 @ 0000017804722640] Use a pattern such as %03d for an image sequence or use the -update option (with -frames:v 1 if needed) to write a single image.
-[out#0/image2 @ 0000017804722500] video:277KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
-frame=    1 fps=0.0 q=-0.0 Lsize=N/A time=00:00:00.03 bitrate=N/A speed=0.665x    
+[image2 @ 0000021c31f42640] The specified filename 'C:\Users\Ванус\Desktop\РАБоты\Конвертер\VideoToGif\temp\thumbnail.png' does not contain an image sequence pattern or a pattern is invalid.
+[image2 @ 0000021c31f42640] Use a pattern such as %03d for an image sequence or use the -update option (with -frames:v 1 if needed) to write a single image.
+[out#0/image2 @ 0000021c31f42500] video:277KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame=    1 fps=0.0 q=-0.0 Lsize=N/A time=00:00:00.03 bitrate=N/A speed=0.64x    
